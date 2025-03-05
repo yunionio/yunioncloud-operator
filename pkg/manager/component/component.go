@@ -35,7 +35,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog"
 
-	"yunion.io/x/jsonutils"
 	"yunion.io/x/log"
 	errorswrap "yunion.io/x/pkg/errors"
 	"yunion.io/x/pkg/utils"
@@ -49,6 +48,7 @@ import (
 	"yunion.io/x/onecloud-operator/pkg/manager"
 	"yunion.io/x/onecloud-operator/pkg/service-init/component"
 	"yunion.io/x/onecloud-operator/pkg/util/k8sutil"
+	"yunion.io/x/onecloud-operator/pkg/util/onecloud"
 )
 
 type ComponentManager struct {
@@ -649,7 +649,7 @@ func (m *ComponentManager) newConfigMap(componentType v1alpha1.ComponentType, zo
 }
 
 func (m *ComponentManager) newServiceConfigMap(cType v1alpha1.ComponentType, zone string, oc *v1alpha1.OnecloudCluster, opt interface{}) *corev1.ConfigMap {
-	configYaml := jsonutils.Marshal(opt).YAMLString()
+	configYaml := onecloud.GetConfig(opt).YAMLString()
 	return m.newConfigMap(cType, zone, oc, configYaml)
 }
 

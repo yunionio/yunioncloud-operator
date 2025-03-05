@@ -16,6 +16,7 @@ package onecloud
 
 import (
 	"net/http"
+	"reflect"
 	"strings"
 
 	"golang.org/x/sync/errgroup"
@@ -24,9 +25,11 @@ import (
 	"yunion.io/x/log"
 	"yunion.io/x/pkg/errors"
 	"yunion.io/x/pkg/util/httputils"
+	"yunion.io/x/pkg/utils"
 
 	ansibleapi "yunion.io/x/onecloud/pkg/apis/ansible"
 	devtoolapi "yunion.io/x/onecloud/pkg/apis/devtool"
+	identityapi "yunion.io/x/onecloud/pkg/apis/identity"
 	monitorapi "yunion.io/x/onecloud/pkg/apis/monitor"
 	"yunion.io/x/onecloud/pkg/mcclient"
 	"yunion.io/x/onecloud/pkg/mcclient/modulebase"
@@ -933,4 +936,23 @@ func EnsureAgentAnsiblePlaybookRef(s *mcclient.ClientSession) error {
 		}
 	}
 	return nil
+}
+
+func GetConfig(opt interface{}) jsonutils.JSONObject {
+	config := jsonutils.Marshal(opt)
+	options, ok := config.(*jsonutils.JSONDict)
+	if !ok {
+		return config
+	}
+	rv := reflect.Indirect(reflect.ValueOf(opt))
+	if !(rv.FieldByName("CommonOptions").IsValid() ||
+		(rv.FieldByName("DBOptions").IsValid() && rv.FieldByName("BaseOptions").IsValid())) { // keystone
+		return config
+	}
+	for _, k := range options.SortedKeys() {
+		if !utils.IsInArray(k, identityapi.ServiceBlacklistOptionMap["default"]) {
+			options.Remove(k)
+		}
+	}
+	return options
 }

@@ -14,6 +14,7 @@ import (
 	"yunion.io/x/onecloud-operator/pkg/controller"
 	"yunion.io/x/onecloud-operator/pkg/manager/config"
 	"yunion.io/x/onecloud-operator/pkg/service-init/cluster"
+	"yunion.io/x/onecloud-operator/pkg/util/onecloud"
 )
 
 type PrepareManager interface {
@@ -284,7 +285,7 @@ func (m *prepareManager) syncComponentConfig(
 	case string:
 		optContent = opt.(string)
 	default:
-		optContent = jsonutils.Marshal(opt).YAMLString()
+		optContent = onecloud.GetConfig(opt).YAMLString()
 	}
 	if err := os.WriteFile(
 		cfgFilePath,
